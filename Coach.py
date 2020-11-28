@@ -11,6 +11,9 @@ from tqdm import tqdm
 from Arena import Arena
 from MCTS import MCTS
 
+from animalshogi.AnimalShogiPlayers import RandomPlayer, GreedyAnimalShogiPlayer
+from animalshogi.AnimalShogiGame import AnimalShogiGame as Game
+
 log = logging.getLogger(__name__)
 
 
@@ -112,6 +115,14 @@ class Coach():
 
             self.nnet.train(trainExamples)
             nmcts = MCTS(self.game, self.nnet, self.args)
+
+            log.info('PITTING AGAINST GREEDY PLAYER')
+            arena = Arena(GreedyAnimalShogiPlayer(Game()).play,
+                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
+            rwins, nwins, draws = arena.playGames(100)
+            logFile = open('./animalshogi/vsRandom.txt', 'a+')
+            logFile.write('Iteration %2d, winning rate: %.1f\n' % (i, nwins + 0.5 * draws))
+            logFile.close()
 
             log.info('PITTING AGAINST PREVIOUS VERSION')
             arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),
