@@ -59,7 +59,6 @@ class GreedyAnimalShogiPlayer():
                 continue
             nextBoard, _ = self.game.getNextState(board, 1, a)
             score = self.game.getScore(nextBoard, 1)
-            print(score, a // 12 + 1, (a // 4) % 3, a % 4)
             if score > max_score:
                 max_score = score
                 candidates = [a]

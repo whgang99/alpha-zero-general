@@ -1,1 +1,5 @@
-80.5
+Iteration  1, winning rate: 96.0
+Iteration  2, winning rate: 98.0
+Iteration  3, winning rate: 97.0
+Iteration  4, winning rate: 99.0
+Iteration  1, winning rate: 97.0

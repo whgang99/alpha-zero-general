@@ -116,11 +116,20 @@ class Coach():
             self.nnet.train(trainExamples)
             nmcts = MCTS(self.game, self.nnet, self.args)
 
+            """
+            log.info('PITTING AGAINST RANDOM PLAYER')
+            arena = Arena(RandomPlayer(Game()).play,
+                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
+            rwins, nwins, draws = arena.playGames(100)
+            logFile = open('./vsRandom.txt', 'a+')
+            logFile.write('Iteration %2d, winning rate: %.1f\n' % (i, nwins + 0.5 * draws))
+            logFile.close()
+
             log.info('PITTING AGAINST GREEDY PLAYER')
             arena = Arena(GreedyAnimalShogiPlayer(Game()).play,
                           lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
             rwins, nwins, draws = arena.playGames(100)
-            logFile = open('./animalshogi/vsRandom.txt', 'a+')
+            logFile = open('./vsGreedy.txt', 'a+')
             logFile.write('Iteration %2d, winning rate: %.1f\n' % (i, nwins + 0.5 * draws))
             logFile.close()
 
@@ -137,6 +146,8 @@ class Coach():
                 log.info('ACCEPTING NEW MODEL')
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+            """
+            self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
     def getCheckpointFile(self, iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'

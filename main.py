@@ -18,7 +18,7 @@ coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 args = dotdict({
     'numIters': 10,
-    'numEps': 10,              # Number of complete self-play games to simulate during a new iteration.
+    'numEps': 20,              # Number of complete self-play games to simulate during a new iteration.
     'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
     'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
@@ -36,14 +36,14 @@ args = dotdict({
 
 
 def main():
-    """
     nnet = nn(Game())
     nnet.load_checkpoint(folder='ashogickpt', filename='best.pth.tar')
     nmcts = MCTS(Game(), nnet, args)
     arena = Arena(HumanAnimalShogiPlayer(Game()).play, lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), Game(), Game().display)
-    rwins, nwins, draws = arena.playGames(50)
+    rwins, nwins, draws = arena.playGames(10, True)
     print('%d : %d (%d Draws)' % (nwins, rwins, draws))
-    """
+    
+    return
 
     log.info('Loading %s...', Game.__name__)
     g = Game()
