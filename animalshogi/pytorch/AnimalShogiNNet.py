@@ -18,39 +18,64 @@ class AnimalShogiNNet(nn.Module):
         self.args = args
 
         super(AnimalShogiNNet, self).__init__()
-        self.conv1 = nn.Conv2d(1, args.num_channels, 3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
-        self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
-        self.conv4 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
+        
+        self.board_layers = nn.Sequential(
+            nn.Conv2d(1, args.num_channels, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+            nn.Conv2d(args.num_channels, args.num_channels, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+        )
+        
+        self.moti_layers = nn.Sequential(
+            nn.Conv2d(1, 512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+            nn.ConvTranspose2d(512, 512, kernel_size = 2),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+        )
+        
+        self.layers2 = nn.Sequential(
+            nn.Conv2d(args.num_channels*2, args.num_channels, 3, stride=1, padding=1),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+            nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1),
+            nn.BatchNorm2d(args.num_channels),
+            nn.ReLU(),
+        )
+        
+        self.layers3 = nn.Sequential(
+            nn.Linear(args.num_channels*2, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(),
+            nn.Dropout(),
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Dropout(),
+        )
 
-        self.bn1 = nn.BatchNorm2d(args.num_channels)
-        self.bn2 = nn.BatchNorm2d(args.num_channels)
-        self.bn3 = nn.BatchNorm2d(args.num_channels)
-        self.bn4 = nn.BatchNorm2d(args.num_channels)
+        self.fc0 = nn.Linear(512, self.action_size)
 
-        self.fc1 = nn.Linear(args.num_channels*2, 1024)
-        self.fc_bn1 = nn.BatchNorm1d(1024)
+        self.fc1 = nn.Linear(512, 1)
 
-        self.fc2 = nn.Linear(1024, 512)
-        self.fc_bn2 = nn.BatchNorm1d(512)
+    def forward(self, boards, motis):
+        #                                                      boards: batch_size x 3 x 4
+        #                                                       motis: batch_size x 2 x 3
+        
+        boards = boards.view(-1, 1, 3, 4)                            # batch_size x 1 x 3 x 4
+        motis = motis.view(-1, 1, 2, 3)                                 # batch_size x 1 x 6
+        
+        boards = self.board_layers(boards)                           # batch_size x num_channels x 3 x 4
+        motis = self.moti_layers(motis)                              # batch_size x num_channels x 3 x 4
+        
+        s = torch.cat((boards, motis), dim=1)                        # batch_size x (num_channels x 2) x 3 x 4
+        s = self.layers2(s).view(-1, self.args.num_channels*2)       # batch_size x (num_channels x 2) x 12
+        s = self.layers3(s)                                          # batch_size x 512
 
-        self.fc3 = nn.Linear(512, self.action_size)
-
-        self.fc4 = nn.Linear(512, 1)
-
-    def forward(self, s):
-        #                                                           s: batch_size x 3 x 4
-        s = s.view(-1, 1, 3, 4)                                      # batch_size x 1 x 3 x 4
-        s = F.relu(self.bn1(self.conv1(s)))                          # batch_size x num_channels x 3 x 4
-        s = F.relu(self.bn2(self.conv2(s)))                          # batch_size x num_channels x 3 x 4
-        s = F.relu(self.bn3(self.conv3(s)))                          # batch_size x num_channels x 3 x 4
-        s = F.relu(self.bn4(self.conv4(s)))                          # batch_size x num_channels x 1 x 2
-        s = s.view(-1, self.args.num_channels*2)
-
-        s = F.dropout(F.relu(self.fc_bn1(self.fc1(s))), p=self.args.dropout, training=self.training)  # batch_size x 1024
-        s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)  # batch_size x 512
-
-        pi = self.fc3(s)                                                                         # batch_size x action_size
-        v = self.fc4(s)                                                                          # batch_size x 1
+        pi = self.fc0(s)                                             # batch_size x action_size
+        v = self.fc1(s)                                              # batch_size x 1
 
         return F.log_softmax(pi, dim=1), torch.tanh(v)
