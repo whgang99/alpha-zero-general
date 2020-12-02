@@ -1,5 +1,6 @@
 '''
 Animal Shogi implementation by Gang, Woohyun
+based on Eric P. Nichols' othello logic.
 ================================================================
 Author: Eric P. Nichols
 Date: Feb 8, 2008.
@@ -51,9 +52,12 @@ class Board():
         # I needlessly included 0th index for simpler implementation.
         self.moti = [[0, 0, 0, 0], [0, 0, 0, 0]]
 
-        # 1000-days-moves requires significant space,
-        # so I implemented 100 moves limit instead.
-        self.draw_counter = 0
+        # Correctly re-implemented 1000 days move.
+        # (Equivalent to threefold repetition of chess.)
+        self.draw_counter = {}
+        # dirty implementation using self.draw_counter[0]
+        # as threefold repetition flag
+        self.draw_counter[0] = 0
 
     # add [][] indexer syntax to the Board
     def __getitem__(self, index): 
@@ -156,9 +160,6 @@ class Board():
     def execute_move(self, move, color):
         """Perform the given move on the board.
         """
-        # print(move)
-        self.draw_counter += 1
-
         src_x, src_y, dst_x, dst_y = move
         
         if src_x == 3:
@@ -166,25 +167,48 @@ class Board():
             self.moti[color // 2][piece] -= 1
             self[dst_x][dst_y] = piece * color
             return
-
-        piece = self[src_x][src_y]
-        capture = abs(self[dst_x][dst_y])
-        
-        self[src_x][src_y] = 0
-        
-        if capture % 5:
-            if capture == 4:
-                capture = 1
-            self.moti[color // 2][capture] += 1
-        
-        if piece == 1 and dst_y == 3:
-            self[dst_x][3] = 4
-        elif piece == -1 and dst_y == 0:
-            self[dst_x][0] = -4
         else:
-            self[dst_x][dst_y] = piece
+            piece = self[src_x][src_y]
+            capture = abs(self[dst_x][dst_y])
+        
+            self[src_x][src_y] = 0
+        
+            if capture % 5:
+                if capture == 4:
+                    capture = 1
+                self.moti[color // 2][capture] += 1
+        
+            if piece == 1 and dst_y == 3:
+                self[dst_x][3] = 4
+            elif piece == -1 and dst_y == 0:
+                self[dst_x][0] = -4
+            else:
+                self[dst_x][dst_y] = piece
+        
+        current_hash = self._hash(color)
+        if current_hash in self.draw_counter:
+            self.draw_counter[current_hash] += 1
+            #print("Repeated %d times (%d)" % (self.draw_counter[current_hash], current_hash))
+            if self.draw_counter[current_hash] == 3:
+                self.draw_counter[0] = 1
+        else:
+            #print("New situation (%d)" % current_hash)
+            self.draw_counter[current_hash] = 1
+
         return
 
+    def _hash(self, color):
+        sum = color
+
+        for y in range(4):
+            for x in range(3):
+                sum = (sum << 4) + self[x][y]
+
+        for piece in range(1, 4):
+            sum = (sum << 2) + self.moti[0][piece]
+
+        return sum
+    
     def _discover_move(self, origin, direction):
         """ If moving the piece on origin in direction is a valid move, returns the move. If not, returns None.
         """

@@ -1,5 +1,6 @@
 *.pyc
 .DS_Store
+.gitignore
 
 /temp/
 /.project
@@ -11,3 +12,11 @@ checkpoints/
 # For PyCharm users
 .idea/
 
+__pycache__
+ashogickpt/checkpoint_*
+ashogickpt/temp.pth.tar
+.vs/
+
+pit.py
+
+*.zip

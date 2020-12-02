@@ -80,8 +80,9 @@ class AnimalShogiGame(Game):
         
         pieces, _, draw_counter = board
 
-        if draw_counter >= 100:
-            return 0.001
+        # For training, the player who caused threefold repetition is considered lost.
+        if draw_counter[0]:
+            return -player
 
         player_lion = False
         opponent_lion = False
@@ -125,14 +126,14 @@ class AnimalShogiGame(Game):
 
         return l
 
-    def stringRepresentation(self, board):
+    def stringRepresentation(self, board):  # TODO: print draw counters
         pieces, moti, draw_counter = board
-        return pieces.tostring() + moti.tostring() + bytes('%02d' % draw_counter, 'utf-8')
+        return pieces.tostring() + moti.tostring()
 
-    def stringRepresentationReadable(self, board):  # TODO: print motigoma
+    def stringRepresentationReadable(self, board):  # TODO: print motigoma, draw counters
         pieces, moti, draw_counter = board
         pieces_s = "".join(self.square_content[square] for row in pieces for square in row)
-        return pieces_s + '\nDraw Counter: %d' % draw_counter
+        return pieces_s
 
     def getScore(self, board, player):
         pieces, moti, _ = board
@@ -143,7 +144,7 @@ class AnimalShogiGame(Game):
 
     @staticmethod
     def display(board):  # TODO: print motigoma
-        pieces, moti, draw_counter = board
+        pieces, moti, _ = board
         n = pieces.shape[0]
         print("   A   B   C")
         print("----------------")
@@ -161,4 +162,4 @@ class AnimalShogiGame(Game):
                     print(AnimalShogiGame.square_content[i] * moti[0][i], end=' ')
             print()
 
-        print("---------------- (%d)" % (100 - draw_counter))
+        print("----------------")
