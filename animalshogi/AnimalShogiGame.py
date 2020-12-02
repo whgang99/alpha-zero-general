@@ -44,7 +44,7 @@ class AnimalShogiGame(Game):
         b = Board()
         b.pieces = np.copy(pieces)
         b.moti = np.copy(moti)
-        b.draw_counter = draw_counter
+        b.draw_counter = draw_counter.copy()
         
         if player == 1:
             move = (int(action / 48), int(action / 12) % 4, int(action / 4) % 3, action % 4)
