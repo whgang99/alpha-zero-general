@@ -4,7 +4,7 @@ based on Eric P. Nichols' othello logic.
 
 Differences from official rules:
     The player who made 1000-days-moves(threefold repetition) loses.
-    100 moves limit.
+    Moves limit (defaults to 100)
 ================================================================
 Author: Eric P. Nichols
 Date: Feb 8, 2008.
@@ -34,7 +34,7 @@ class Board():
         [(1,1),(1,-1),(-1,-1),(-1,1)],  # -2: (Black) Elephant
         [(0, -1)]]  # -1: Black chick
 
-    def __init__(self):
+    def __init__(self, turn_limit=100):
         "Set up initial board configuration."
         
         # Create the empty board array.
@@ -197,7 +197,7 @@ class Board():
             self.draw_counter[current_hash] += 1
             #print("Repeated %d times (%d)" % (self.draw_counter[current_hash], current_hash))
             if self.draw_counter[current_hash] == 3:
-                self.draw_counter[0] = 100
+                self.draw_counter[0] = -1
         else:
             #print("New situation (%d)" % current_hash)
             self.draw_counter[current_hash] = 1

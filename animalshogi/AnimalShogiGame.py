@@ -24,9 +24,12 @@ class AnimalShogiGame(Game):
     def getSquarePiece(piece):
         return AnimalShogiGame.square_content[piece]
 
+    def __init__(self, turn_limit):
+        self.turn_limit = turn_limit
+
     def getInitBoard(self):
         # return initial board (numpy board)
-        b = Board()
+        b = Board(self.turn_limit)
         return np.array(b.pieces), np.array(b.moti), b.draw_counter
 
     def getBoardSize(self):
@@ -80,8 +83,10 @@ class AnimalShogiGame(Game):
         
         pieces, _, draw_counter = board
 
-        if draw_counter[0] >= 100:
+        if draw_counter[0] == -1:
             return 1
+        elif draw_counter[0] >= self.turn_limit:
+            return 0.001
 
         player_lion = False
         opponent_lion = False
