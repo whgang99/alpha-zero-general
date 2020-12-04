@@ -27,7 +27,7 @@ args = dotdict({
     'cpuct': 1,
 
     'checkpoint': './ashogickpt/',
-    'load_model': False,
+    'load_model': True,
     'load_folder_file': ('./ashogickpt','best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
     'cuda': True,
@@ -50,7 +50,7 @@ def main():
     """
 
     log.info('Loading %s...', Game.__name__)
-    g = Game()
+    g = Game(100)
 
     log.info('Loading %s...', nn.__name__)
     nnet = nn(g)
