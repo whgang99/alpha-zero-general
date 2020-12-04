@@ -44,7 +44,6 @@ class HumanAnimalShogiPlayer():
                     src_x, src_y, dst_x, dst_y = input_a
                     src_x, dst_x = ord(src_x.upper()) - 65, ord(dst_x.upper()) - 65
                     src_y, dst_y = int(src_y), int(dst_y)
-                    print(src_x, src_y, dst_x, dst_y )
                     
                     if (0 <= src_x < 3) and (0 <= src_y < 4) and (0 <= dst_x < 3) and (0 <= dst_y < 4):
                         a = 48 * src_x + 12 * src_y + 4 * dst_x + dst_y

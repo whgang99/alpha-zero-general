@@ -80,9 +80,8 @@ class AnimalShogiGame(Game):
         
         pieces, _, draw_counter = board
 
-        # For training, the player who caused threefold repetition is considered lost.
-        if draw_counter[0]:
-            return -player
+        if draw_counter[0] >= 100:
+            return 1
 
         player_lion = False
         opponent_lion = False
@@ -108,7 +107,7 @@ class AnimalShogiGame(Game):
         # return state if player==1, else return -state if player==-1
         if player == -1:
             pieces, moti, draw_counter = board
-            return np.flip(-pieces, (0, 1)), moti[::-1], draw_counter
+            return np.flip(-pieces, (0, 1)), moti[::-1], draw_counter.copy()
         else:
             return board
 
@@ -122,18 +121,18 @@ class AnimalShogiGame(Game):
         pi_board_uti = np.reshape(pi[144:], (3, 3, 4))
         new_pi = np.hstack((np.flip(pi_board, (1, 3)).ravel(), np.flip(pi_board_uti, (2)).ravel()))
 
-        l = [((pieces, moti, draw_counter), pi), ((np.fliplr(pieces), moti, draw_counter), new_pi)]
+        l = [((pieces, moti, draw_counter.copy()), pi), ((np.fliplr(pieces), moti, draw_counter.copy()), new_pi)]
 
         return l
 
-    def stringRepresentation(self, board):  # TODO: print draw counters
+    def stringRepresentation(self, board):
         pieces, moti, draw_counter = board
-        return pieces.tostring() + moti.tostring()
+        return pieces.tostring() + moti.tostring() + bytes('%02d' % draw_counter[0], 'utf-8')
 
-    def stringRepresentationReadable(self, board):  # TODO: print motigoma, draw counters
+    def stringRepresentationReadable(self, board):  # TODO: print motigoma
         pieces, moti, draw_counter = board
         pieces_s = "".join(self.square_content[square] for row in pieces for square in row)
-        return pieces_s
+        return pieces_s + '\nDraw Counter: %d' % draw_counter[0]
 
     def getScore(self, board, player):
         pieces, moti, _ = board
@@ -144,7 +143,7 @@ class AnimalShogiGame(Game):
 
     @staticmethod
     def display(board):  # TODO: print motigoma
-        pieces, moti, _ = board
+        pieces, moti, draw_counter = board
         n = pieces.shape[0]
         print("   A   B   C")
         print("----------------")
@@ -162,4 +161,4 @@ class AnimalShogiGame(Game):
                     print(AnimalShogiGame.square_content[i] * moti[0][i], end=' ')
             print()
 
-        print("----------------")
+        print("---------------- (%d)" % (100 - draw_counter[0]))

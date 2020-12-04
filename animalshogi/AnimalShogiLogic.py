@@ -1,6 +1,10 @@
 '''
 Animal Shogi implementation by Gang, Woohyun
 based on Eric P. Nichols' othello logic.
+
+Differences from official rules:
+    The player who made 1000-days-moves(threefold repetition) loses.
+    100 moves limit.
 ================================================================
 Author: Eric P. Nichols
 Date: Feb 8, 2008.
@@ -160,6 +164,9 @@ class Board():
     def execute_move(self, move, color):
         """Perform the given move on the board.
         """
+        # print(move)
+        self.draw_counter[0] += 1
+
         src_x, src_y, dst_x, dst_y = move
         
         if src_x == 3:
@@ -184,13 +191,13 @@ class Board():
                 self[dst_x][0] = -4
             else:
                 self[dst_x][dst_y] = piece
-        
+            
         current_hash = self._hash(color)
         if current_hash in self.draw_counter:
             self.draw_counter[current_hash] += 1
             #print("Repeated %d times (%d)" % (self.draw_counter[current_hash], current_hash))
             if self.draw_counter[current_hash] == 3:
-                self.draw_counter[0] = 1
+                self.draw_counter[0] = 100
         else:
             #print("New situation (%d)" % current_hash)
             self.draw_counter[current_hash] = 1
@@ -198,17 +205,10 @@ class Board():
         return
 
     def _hash(self, color):
-        sum = color
+        hashValue = hash(tuple(np.vstack((self.pieces, self.moti)).flatten()))
 
-        for y in range(4):
-            for x in range(3):
-                sum = (sum << 4) + self[x][y]
+        return hashValue
 
-        for piece in range(1, 4):
-            sum = (sum << 2) + self.moti[0][piece]
-
-        return sum
-    
     def _discover_move(self, origin, direction):
         """ If moving the piece on origin in direction is a valid move, returns the move. If not, returns None.
         """
