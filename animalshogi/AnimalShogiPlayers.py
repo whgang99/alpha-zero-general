@@ -5,6 +5,15 @@ from random import choice
 piece2int = {'C': 1, 'E': 2, 'G': 3, 'H': 4, 'L': 5}
 int2piece = {1: 'C', 2: 'E', 3: 'G', 4: 'H', 5: 'L'}
 
+# get string representation of the move
+def str_move(a):
+    src_x, src_y, dst_x, dst_y = a // 48, (a // 12) % 4, (a // 4) % 3, a % 4
+    if src_x == 3:
+        return "[" + str(int2piece[src_y + 1]) + chr(dst_x + 65) + str(dst_y) + "]"
+    else:
+        return "[" + chr(src_x + 65) + str(src_y) + chr(dst_x + 65) + str(dst_y) + "]"
+
+
 class RandomPlayer():
     def __init__(self, game):
         self.game = game
@@ -18,19 +27,16 @@ class RandomPlayer():
 
 
 class HumanAnimalShogiPlayer():
-    def __init__(self, game):
+    def __init__(self, game, engine_assist=0):
         self.game = game
+        self.depth = engine_assist
 
     def play(self, board):
         # display(board)
         valid = self.game.getValidMoves(board, 1)
         for i in range(len(valid)):
             if valid[i]:
-                src_x, src_y, dst_x, dst_y = i // 48, (i // 12) % 4, (i // 4) % 3, i % 4
-                if src_x == 3:
-                    print("[", int2piece[src_y + 1], chr(dst_x + 65), dst_y, sep="", end="]")
-                else:
-                    print("[", chr(src_x + 65), src_y, chr(dst_x + 65), dst_y, sep="", end="]")
+                print(str_move(i), end=' ')
         while True:
             input_move = input()
             input_a = input_move
@@ -72,13 +78,84 @@ class HumanAnimalShogiPlayer():
         return a
 
 
+class MinimaxAnimalShogiPlayer():
+    def __init__(self, game, depth):
+        self.game = game
+        self.depth = depth
+
+    def play(self, board):
+        valids = self.game.getValidMoves(board, 1)
+        max_score = -256
+        candidates = []
+
+        for a in range(self.game.getActionSize()):
+            if valids[a]==0:
+                continue
+            nextBoard, _ = self.game.getNextState(board, 1, a)
+            score = self.search(nextBoard, self.depth - 1)
+            
+            #print(str_move(a), score)
+
+            if score > max_score:
+                max_score = score
+                candidates = [a]
+            elif score == max_score:
+                candidates.append(a)
+        return choice(candidates)
+
+    def search(self, board, depth):
+        color = pow(-1, self.depth - depth)
+
+        if depth == self.depth:
+            return -self.game.getScore(board, color)
+
+        valids = self.game.getValidMoves(board, color)
+        max_score = -256
+        candidates = []
+
+        for a in range(self.game.getActionSize()):
+            if valids[a]==0:
+                continue
+            elif color == 1:
+                action = a
+            elif color == -1:
+                if a >= 168:
+                    action = 347 - a
+                elif a >= 156:
+                    action = 323 - a
+                elif a >= 144:
+                    action = 299 - a
+                else:
+                    action = 143 - a
+            nextBoard, _ = self.game.getNextState(board, color, action)
+            
+
+            ended = self.game.getGameEnded(nextBoard, color)
+            if ended == 1:
+                max_score = 255
+                break
+            elif ended == -1:
+                score = -255
+            elif ended == 0:
+                score = self.search(nextBoard, depth + 1)
+            else:
+                score = 0
+
+            #print(' ' * depth + str_move(a), score)
+
+            if score > max_score:
+                max_score = score
+        return -max_score
+        
+
+
 class GreedyAnimalShogiPlayer():
     def __init__(self, game):
         self.game = game
 
     def play(self, board):
         valids = self.game.getValidMoves(board, 1)
-        max_score = -20
+        max_score = -256
         candidates = []
         for a in range(self.game.getActionSize()):
             if valids[a]==0:

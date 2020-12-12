@@ -80,7 +80,11 @@ class Coach():
         only if it wins >= updateThreshold fraction of games.
         """
 
-        for i in range(1, self.args.numIters + 1):
+        next_i = 1
+        while os.path.exists(self.nnet.get_filepath(self.args.checkpoint, self.getCheckpointFile(next_i))):
+            next_i += 1
+
+        for i in range(next_i, self.args.numIters + 1):
             # bookkeeping
             log.info(f'Starting Iter #{i} ...')
             # examples of the iteration
@@ -117,26 +121,6 @@ class Coach():
             nmcts = MCTS(self.game, self.nnet, self.args)
             
             self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-
-            """
-            self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            
-            log.info('PITTING AGAINST RANDOM PLAYER')
-            arena = Arena(RandomPlayer(Game()).play,
-                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
-            rwins, nwins, draws = arena.playGames(100)
-            logFile = open('./vsRandom.txt', 'a+')
-            logFile.write('Iteration %2d, winning rate: %.1f\n' % (i, nwins + 0.5 * draws))
-            logFile.close()
-
-            log.info('PITTING AGAINST GREEDY PLAYER')
-            arena = Arena(GreedyAnimalShogiPlayer(Game()).play,
-                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
-            rwins, nwins, draws = arena.playGames(100)
-            logFile = open('./vsGreedy.txt', 'a+')
-            logFile.write('Iteration %2d, winning rate: %.1f\n' % (i, nwins + 0.5 * draws))
-            logFile.close()
-            """
 
             log.info('PITTING AGAINST PREVIOUS VERSION')
             arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),

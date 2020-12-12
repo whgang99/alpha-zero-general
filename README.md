@@ -1,3 +1,17 @@
+# Animal Shogi with Reinforcement Learning
+
+This is whgang99(강우현)'s animal shogi implementation based on AlphaZero-General by suragnir.
+
+I implemented animal shogi game logics, network(s), and minimax agent. You can find my original work in ```animalshogi```, and our trained model in ```ashogickpt/a_best.pth.tar```, which is a result obtained after 10 iterations.
+
+You can run ```pit.py``` to run games (```arena.PlayGames```) or a single game (```arena.PlayGame```). You can play games between neural network(```n1p```), human player(```hp```), random(```rp```), greedy(```gp```), or minimax(```mp```) agents.
+
+You can run ```main.py``` to train the network. It will load from ```ashogickpt/a_best.pth.tar```. Modify line 30 of ```main.py``` to not load model, or line 31 to load from different file.
+
+There are alternate networks we have experimented with. It is possible to change network by modifying line 38 of ```animalshogi/pytorch/NNet.py```.
+
+Original README.md below:
+
 # Alpha Zero General (any game, any framework!)
 
 A simplified, highly flexible, commented and (hopefully) easy to understand implementation of self-play based reinforcement learning based on the AlphaGo Zero paper (Silver et al). It is designed to be easy to adopt for any two-player turn-based adversarial game and any deep learning framework of your choice. A sample implementation has been provided for the game of Othello in PyTorch, Keras, TensorFlow and Chainer. An accompanying tutorial can be found [here](http://web.stanford.edu/~surag/posts/alphazero.html). We also have implementations for GoBang and TicTacToe.

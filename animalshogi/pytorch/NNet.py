@@ -13,6 +13,8 @@ import torch
 import torch.optim as optim
 
 from .AnimalShogiNNet import AnimalShogiNNet as annet
+from .AnimalShogiNNet import AnimalShogiNNetA as annet_a
+from .AnimalShogiNNet import AnimalShogiNNetB as annet_b
 
 args = dotdict({
     'lr': 0.001,
@@ -25,8 +27,16 @@ args = dotdict({
 
 
 class NNetWrapper(NeuralNet):
-    def __init__(self, game):
-        self.nnet = annet(game, args)
+    def __init__(self, game, nnet=None):
+        if nnet == 'a':
+            self.nnet = annet_a(game, args)
+        elif nnet == 'b':
+            self.nnet = annet_b(game, args)
+        elif nnet == ' ':
+            self.nnet = annet(game, args)
+        else:
+            self.nnet = annet_a(game, args)
+
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
 
@@ -108,7 +118,7 @@ class NNetWrapper(NeuralNet):
         return torch.sum((targets - outputs.view(-1)) ** 2) / targets.size()[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
-        filepath = os.path.join(folder, filename)
+        filepath = self.get_filepath(folder, filename)
         if not os.path.exists(folder):
             print("Checkpoint Directory does not exist! Making directory {}".format(folder))
             os.mkdir(folder)
@@ -121,9 +131,12 @@ class NNetWrapper(NeuralNet):
 
     def load_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L98
-        filepath = os.path.join(folder, filename)
+        filepath = self.get_filepath(folder, filename)
         if not os.path.exists(filepath):
             raise ("No model in path {}".format(filepath))
         map_location = None if args.cuda else 'cpu'
         checkpoint = torch.load(filepath, map_location=map_location)
         self.nnet.load_state_dict(checkpoint['state_dict'])
+
+    def get_filepath(self, folder, filename):
+        return os.path.join(folder, self.nnet.filename_prefix + filename)

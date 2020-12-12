@@ -73,7 +73,7 @@ class Board():
         count = 0
         
         for i in range(1, 4):
-            count += i * (self.moti[color // 2][i] - self.moti[-color // 2][i])
+            count += i * (self.moti[0][i] - self.moti[1][i])
         
         for y in range(4):
             for x in range(3):
@@ -142,12 +142,8 @@ class Board():
         (x,y) = square
         piece = self[x][y]
 
-        # determine the color and type of the piece.
-        color = np.sign(piece)
-        piece = abs(piece) if piece != -1 else 0
-
         # skip empty source squares.
-        if color==0:
+        if piece==0:
             return None
 
         # search all possible directions.

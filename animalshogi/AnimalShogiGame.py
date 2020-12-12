@@ -57,6 +57,7 @@ class AnimalShogiGame(Game):
             else:
                 move = (2 - int(action / 48), 3 - int(action / 12) % 4, 2 - int(action / 4) % 3, 3 - action % 4)
             
+        #print('getNextState', action, move)
         b.execute_move(move, player)
         return ((b.pieces, b.moti, b.draw_counter), -player)
 
@@ -72,6 +73,7 @@ class AnimalShogiGame(Game):
         legalMoves.sort()
         
         for src_x, src_y, dst_x, dst_y in legalMoves:
+            #print('getValidMoves', src_x, src_y, dst_x, dst_y, 48 * src_x + 12 * src_y + 4 * dst_x + dst_y)
             valids[48 * src_x + 12 * src_y + 4 * dst_x + dst_y] = 1
         return np.array(valids)
 
